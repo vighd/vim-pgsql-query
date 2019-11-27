@@ -1,4 +1,4 @@
-function RunPGSQLQery(select_type)
+function RunPGSQLQuery(select_type)
   if (match('--USER: ', getline(1)) && getline(1)[8:] != '') && (match('--DATABASE: ', getline(2)) && getline(2)[12:] != '')
     if a:select_type == "init"
       let g:user = getline(1)[8:]
