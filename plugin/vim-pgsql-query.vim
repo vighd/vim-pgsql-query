@@ -32,12 +32,15 @@ function RunPGSQLQuery(select_type)
         execute 'set dictionary+=' . l:dictpath
       endif
     elseif a:select_type == "n"
-      execute ':!clear && PAGER="pspg -s 6 --no-commandbar --force-uniborder" psql -U ' . g:user . ' -f % ' . g:db
+      execute '!clear && PAGER="pspg -s 6 --no-commandbar --force-uniborder" psql -U ' . g:user . ' -f % ' . g:db
+      return
     else
-      execute "'<,'>w! /tmp/vim_psql.sql"
+      silent execute "'<,'>w! /tmp/vim_psql.sql"
       execute '!clear && PAGER="pspg -s 6 --no-commandbar --force-uniborder" psql -U ' . g:user . ' -f /tmp/vim_psql.sql ' . g:db
+      return
     endif
   else
     echo 'Database connection parameters (USER, DATABASE) is not set!'
+    return
   endif
 endfunction

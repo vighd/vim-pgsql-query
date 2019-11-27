@@ -1,25 +1,25 @@
                              Reference Manual~
 
 
-===================================================================================
-CONTENTS                                                 *vim-pgsql-query-contents*
+========================================================================================
+CONTENTS                                                      *vim-pgsql-query-contents*
 
-    1. Usage................................................|vim-pgsql-query-usage|
+    1. Usage.....................................................|vim-pgsql-query-usage|
 
-===================================================================================
-1. Dependencies.                                      vim-pgsql-query-dependencies*
+========================================================================================
+1. Dependencies.                                           vim-pgsql-query-dependencies*
 
   - psql -> https://www.postgresql.org/docs/11/app-psql.html
   - pspg -> https://github.com/okbob/pspg
 
-----------------------------------------------------------------------------------
+----------------------------------------------------------------------------------------
 
-2. Usage                                                    *vim-pgsql-query-usage*
+2. Usage                                                         *vim-pgsql-query-usage*
 
   Add these two mappings:
 
   nnoremap <F9> :call RunPGSQLQuery("n")<CR> " To run query on the current buffer
-  xnoremap <F9> :call RunPGSQLQuery("v")<CR> " To run query on the visual selection
+  xnoremap <F9> :<C-U>call RunPGSQLQuery("v")<CR> " To run query on the visual selection
 
   Add this autocmd:
 
