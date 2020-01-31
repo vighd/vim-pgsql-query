@@ -1,5 +1,4 @@
-                             Reference Manual~
-
+*vim-pgsql-query.txt* A minimal plugin used to query PGSQL databases with psql and pspg
 
 ========================================================================================
 CONTENTS                                                      *vim-pgsql-query-contents*
@@ -9,7 +8,7 @@ CONTENTS                                                      *vim-pgsql-query-c
 ========================================================================================
 1. Dependencies.                                           vim-pgsql-query-dependencies*
 
-  - psql -> https://www.postgresql.org/docs/11/app-psql.html
+  - psql -> https://www.postgresql.org/docs/12/app-psql.html
   - pspg -> https://github.com/okbob/pspg
 
 ----------------------------------------------------------------------------------------
@@ -18,15 +17,17 @@ CONTENTS                                                      *vim-pgsql-query-c
 
   Add these two mappings:
 
-  nnoremap <F9> :call RunPGSQLQuery("n")<CR> " To run query on the current buffer
-  xnoremap <F9> :<C-U>call RunPGSQLQuery("v")<CR> " To run query on the visual selection
+  nnoremap <F9>   :call RunPGSQLQuery<CR>         " To run query on the current buffer
+  xnoremap <F9>   :call RunPGSQLQueryVisual()<CR> " To run query on the visual selection
+  xnoremap <S-F9> :call RunPGSQLQueryToCsv()<CR>  " To run query on the visual selection
+                                                  " and saves the query output the given
+                                                  " csv path (it will includes the column
+                                                  " names as header)
 
-  Add this autocmd:
-
-  au BufRead,BufNewFile *.sql call RunPGSQLQuery("init")
-
-  Add a header comment to the every SQL file if you want to use this plugin. The
-  whitespace is required!
+  Add connection parameter comment start at the every SQL file if you want to use this
+  plugin. The whitespace is required!
 
   --USER: [db-user-name]
   --POSTGRES: [db-name]
+
+  then use it.
