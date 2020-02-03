@@ -1,5 +1,5 @@
 " Pager used to parse psql output
-let g:pager = 'PAGER="pspg -s 6 --no-commandbar --force-uniborder"'
+let g:pager = 'PAGER=\"pspg -s 6 --no-commandbar --force-uniborder\"'
 " Init variables
 let g:psql_user = ''
 let g:psql_db = ''
@@ -46,6 +46,15 @@ fun! InitPGSQLQuery()
 
   " The connection is Ok so set it globally
   let g:psql_conn_state = 'ok'
+
+  " Open the terminal if not opened yet
+  if term_getstatus('vim-pgsql-query') == ""
+    au BufWinLeave * if term_getstatus('vim-pgsql-query') != "" | bdelete! vim-pgsql-query | endif
+    call term_start(['/bin/bash'], {'term_name': 'vim-pgsql-query', 'term_rows': 20})
+    call term_sendkeys('vim-pgsql-query', "PS1='' \<CR>")  
+    wincmd w
+    tnoremap <Esc> <C-W>N
+  endif
 endfunction
 
 " This function checks the connection parameters, if any of the parameter is
@@ -65,26 +74,33 @@ endfunction
 
 " RunPGSQLQuery executes the current file.
 fun! RunPGSQLQuery()
+  " Check the file header for connection parameters
   call RunPGSQLCheckConnecionParams()
 
   if g:psql_conn_state == 'ok'
-    execute ':!clear && ' . g:pager . ' psql -U ' . g:psql_user . ' -f % -d ' . g:psql_db
+    silent execute ':!echo ' . g:pager . ' psql -U ' . g:psql_user . ' -f ' . expand('%:p') . ' -d ' . g:psql_db . ' > /tmp/query'
+    redraw!
+    call RunPGSQLQueryInTerminal()
   endif
 endfunction
 
 " RunPGSQLQueryVisual executes only the visual selection.
 fun! RunPGSQLQueryVisual() range
+  " Check the file header for connection parameters
   call RunPGSQLCheckConnecionParams()
 
   if g:psql_conn_state == 'ok'
-    execute "'<,'>w! /tmp/vim_psql.sql"
-    execute '!clear && ' . g:pager . ' psql -U ' . g:psql_user . ' -f /tmp/vim_psql.sql -d ' . g:psql_db
+    execute "'<,'>w! /tmp/visual_query.sql"
+    silent execute ':!echo ' . g:pager . ' psql -U ' . g:psql_user . ' -f /tmp/visual_query.sql -d ' . g:psql_db . ' > /tmp/query'
+    redraw!
+    call RunPGSQLQueryInTerminal()
   endif
 endfunction
 
 " RunPGSQLQueryToCsv prompts for the save path, then executes the visual
 " selection and saves as csv to the given path.
 fun! RunPGSQLQueryToCsv() range
+  " Check the file header for connection parameters
   call RunPGSQLCheckConnecionParams()
 
   if g:psql_conn_state == 'ok'
@@ -94,5 +110,17 @@ fun! RunPGSQLQueryToCsv() range
     let l:csv_save_path = input('File name to save csv: ')
     call inputrestore()
     execute '!clear && ' . g:pager . ' psql -U ' . g:psql_user . ' --csv -o ' . l:csv_save_path . ' -f /tmp/vim_psql_to_csv.sql -d ' . g:psql_db
+  endif
+endfunction
+
+" RunPGSQLQueryInTerminal is a helper function which determines the mode needed to run a query
+fun! RunPGSQLQueryInTerminal()
+  " If pspg running, exit first then run the query else simply run the query
+  if system('pidof pspg') != ""
+    call term_setsize('vim-pgsql-query', 20, 0)
+    call term_sendkeys('vim-pgsql-query', "q clear && time eval $(cat /tmp/query) \<CR>")  
+  else
+    call term_setsize('vim-pgsql-query', 20, 0)
+    call term_sendkeys('vim-pgsql-query', "clear && time eval $(cat /tmp/query) \<CR>")  
   endif
 endfunction
