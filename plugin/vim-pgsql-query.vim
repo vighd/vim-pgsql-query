@@ -53,7 +53,9 @@ fun! InitPGSQLQuery()
     call term_start(['/bin/bash'], {'term_name': 'vim-pgsql-query', 'term_rows': 20})
     call term_sendkeys('vim-pgsql-query', "PS1='' \<CR>")  
     wincmd w
-    tnoremap <Esc> <C-W>N
+    tnoremap <C-a> <C-W>N
+    tnoremap <C-k> <C-W>+
+    tnoremap <C-j> <C-W>-
   endif
 endfunction
 
