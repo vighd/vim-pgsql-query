@@ -1,5 +1,5 @@
 " Pager used to parse psql output
-let g:pager = 'PAGER=\"pspg -s 6 --no-commandbar --force-uniborder\"'
+let g:pager = 'PAGER="pspg -s 5 --no-commandbar --force-uniborder --less-status-bar --null string --bold-labels -I"'
 " Init variables
 let g:psql_user = ''
 let g:psql_db = ''
@@ -80,7 +80,7 @@ fun! RunPGSQLQuery()
   call RunPGSQLCheckConnecionParams()
 
   if g:psql_conn_state == 'ok'
-    silent execute ':!echo ' . g:pager . ' psql -U ' . g:psql_user . ' -f ' . expand('%:p') . ' -d ' . g:psql_db . ' > /tmp/query'
+    silent execute ':!echo ''' . g:pager . ' psql -U ' . g:psql_user . ' -f ' . expand('%:p') . ' -d ' . g:psql_db . ''' > /tmp/query'
     redraw!
     call RunPGSQLQueryInTerminal()
   endif
@@ -93,7 +93,7 @@ fun! RunPGSQLQueryVisual() range
 
   if g:psql_conn_state == 'ok'
     execute "'<,'>w! /tmp/visual_query.sql"
-    silent execute ':!echo ' . g:pager . ' psql -U ' . g:psql_user . ' -f /tmp/visual_query.sql -d ' . g:psql_db . ' > /tmp/query'
+    silent execute ':!echo ''' . g:pager . ' psql -U ' . g:psql_user . ' -f /tmp/visual_query.sql -d ' . g:psql_db . ''' > /tmp/query'
     redraw!
     call RunPGSQLQueryInTerminal()
   endif
@@ -111,7 +111,10 @@ fun! RunPGSQLQueryToCsv() range
     call inputsave()
     let l:csv_save_path = input('File name to save csv: ')
     call inputrestore()
-    execute '!clear && ' . g:pager . ' psql -U ' . g:psql_user . ' --csv -o ' . l:csv_save_path . ' -f /tmp/vim_psql_to_csv.sql -d ' . g:psql_db
+    call inputsave()
+    let l:separator_string = input('Separator string: ')
+    call inputrestore()
+    execute '!clear && ' . g:pager . ' psql -U ' . g:psql_user . ' -t --csv -o ' . l:csv_save_path . ' -A --field-separator=\' . l:separator_string . ' -f /tmp/vim_psql_to_csv.sql -d ' . g:psql_db
   endif
 endfunction
 
