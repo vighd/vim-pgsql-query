@@ -34,5 +34,5 @@ CONTENTS                                                      *vim-pgsql-query-c
   a query, the query-s output will be written into the terminal.
 
   You can switch between the opened windows with <C-W><C-W> (CTRL-W twice). If you want
-  to scroll the terminal first press <Esc> to enter normal mode, use j-k to scroll, then
-  exit from normal mode with a.
+  to scroll the terminal first press <C-a>(CTRL-a) to enter normal mode, use j-k to scroll,
+  then exit from normal mode with <a>.
