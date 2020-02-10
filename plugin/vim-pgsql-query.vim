@@ -51,6 +51,7 @@ fun! InitPGSQLQuery()
   if term_getstatus('vim-pgsql-query') == ""
     au BufWinLeave * if term_getstatus('vim-pgsql-query') != "" | bdelete! vim-pgsql-query | endif
     call term_start(['/bin/bash'], {'term_name': 'vim-pgsql-query', 'term_rows': 20})
+    call term_sendkeys('vim-pgsql-query', "stty -echo \<CR>")  
     call term_sendkeys('vim-pgsql-query', "PS1='' \<CR>")  
     wincmd w
     tnoremap <C-a> <C-W>N
@@ -123,9 +124,9 @@ fun! RunPGSQLQueryInTerminal()
   " If pspg running, exit first then run the query else simply run the query
   if system('pidof pspg') != ""
     call term_setsize('vim-pgsql-query', 20, 0)
-    call term_sendkeys('vim-pgsql-query', "q clear && time eval $(cat /tmp/query) \<CR>")  
+    call term_sendkeys('vim-pgsql-query', "\<C-c> q \<C-c>  clear && time eval $(cat /tmp/query) \<CR>")  
   else
     call term_setsize('vim-pgsql-query', 20, 0)
-    call term_sendkeys('vim-pgsql-query', "clear && time eval $(cat /tmp/query) \<CR>")  
+    call term_sendkeys('vim-pgsql-query', "\<C-c> clear && time eval $(cat /tmp/query) \<CR>")  
   endif
 endfunction
