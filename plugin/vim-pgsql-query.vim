@@ -63,7 +63,8 @@ fun! RunPGSQLQuery()
   call RunPGSQLCheckConnecionParams()
 
   if g:psql_conn_state == 'ok'
-    silent execute ':!echo ''' . g:pager . ' psql -U ' . g:psql_user . ' -h ' . g:psql_host . ' -f ' . expand('%:p') . ' -d ' . g:psql_db . ''' > /tmp/query'
+    silent execute ':!echo ''echo Processing query... &&'' > /tmp/query'
+    silent execute ':!echo ''' . g:pager . ' psql -U ' . g:psql_user . ' -h ' . g:psql_host . ' -f ' . expand('%:p') . ' -d ' . g:psql_db . ''' >> /tmp/query'
     redraw!
     call TerminalRunCommand("time eval $(cat /tmp/query)")
   endif
@@ -76,6 +77,7 @@ fun! RunPGSQLQueryVisual() range
 
   if g:psql_conn_state == 'ok'
     execute "'<,'>w! /tmp/visual_query.sql"
+    silent execute ':!echo ''echo Processing query... &&'' > /tmp/query'
     silent execute ':!echo ''' . g:pager . ' psql -U ' . g:psql_user . ' -h ' . g:psql_host . ' -f /tmp/visual_query.sql -d ' . g:psql_db . ''' > /tmp/query'
     redraw!
     call TerminalRunCommand("time eval $(cat /tmp/query)")
@@ -110,7 +112,7 @@ fun! RunPGSQLQueryToCsv() range
     endif
 
     " Silently run the query and handle errors
-    silent execute '!clear && ' . g:pager . ' psql -U ' . g:psql_user . ' -h ' . g:psql_host . ' -t --csv -o ' . l:csv_save_path . ' -A --field-separator=\' . l:separator_string . ' -f /tmp/vim_psql_to_csv.sql -d ' . g:psql_db
+    silent execute ':!' .g:pager . ' psql -U ' . g:psql_user . ' -h ' . g:psql_host . ' -t --csv -o ' . l:csv_save_path . ' -A --field-separator=\' . l:separator_string . ' -f /tmp/vim_psql_to_csv.sql -d ' . g:psql_db
     redraw!
     if v:shell_error == 0
       echo 'The CSV successfully written to: ' . l:csv_save_path
