@@ -18,11 +18,14 @@ CONTENTS                                                      *vim-pgsql-query-c
   Add these two mappings:
 
   nnoremap <F9>   :call RunPGSQLQuery<CR>         " To run query on the current buffer
-  xnoremap <F9>   :call RunPGSQLQueryVisual()<CR> " To run query on the visual selection
+  xnoremap <F9>   :call RunPGSQLVisualQuery()<CR> " To run query on the visual selection
   xnoremap <S-F9> :call RunPGSQLQueryToCsv()<CR>  " To run query on the visual selection
                                                   " and saves the query output the given
                                                   " csv path (it will includes the column
                                                   " names as header)
+  xnoremap <C-F9> :call RunPGSQLVisualQueryAsJSON()<CR> 
+                                                  " To run query on the visual selection
+                                                  " and format the output with jq
 
   Add connection parameter comment start at the every SQL file if you want to use this
   plugin. The whitespace is required!

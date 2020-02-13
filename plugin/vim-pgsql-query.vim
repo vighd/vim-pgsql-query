@@ -74,8 +74,8 @@ fun! RunPGSQLQuery()
   endif
 endfunction
 
-" RunPGSQLQueryVisual executes only the visual selection.
-fun! RunPGSQLQueryVisual() range
+" RunPGSQLVisualQuery executes only the visual selection.
+fun! RunPGSQLVisualQuery() range
   " Check the file header for connection parameters
   call RunPGSQLCheckConnecionParams()
 
@@ -84,6 +84,19 @@ fun! RunPGSQLQueryVisual() range
     call system("echo 'echo $(date +%H:%m:%S) Processing query... &&' > /tmp/query")
     call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f /tmp/visual_query.sql -c " . g:timing . "' >> /tmp/query")
     call TerminalRunCommand("eval $(cat /tmp/query)")
+  endif
+endfunction
+
+" RunPGSQLVisualQueryAsJSON executes only the visual selection and pases as
+" json.
+fun! RunPGSQLVisualQueryAsJSON() range
+  " Check the file header for connection parameters
+  call RunPGSQLCheckConnecionParams()
+
+  if g:psql_conn_state == 'ok'
+    execute "'<,'>w! /tmp/visual_query.sql"
+    call system("echo '" . g:psql_command . " -Atq -f /tmp/visual_query.sql' > /tmp/query")
+    call TerminalRunCommand('echo "$(date +%H:%m:%S) Processing query..." && eval $(cat /tmp/query) \| jq .')
   endif
 endfunction
 
@@ -115,9 +128,9 @@ fun! RunPGSQLQueryToCsv() range
     endif
 
     " Silently run the query and handle errors
-    let l:command_msg = system(g:pager . ' psql -U ' . g:psql_user . ' -h ' . g:psql_host . ' --csv -o ' . l:csv_save_path . ' -A --field-separator=\' . l:separator_string . ' -q -f /tmp/vim_psql_to_csv.sql -d ' . g:psql_db)
+    let l:command_msg = system(g:psql_command . ' --csv -o ' . l:csv_save_path . ' -A --field-separator=\' . l:separator_string . ' -q -f /tmp/vim_psql_to_csv.sql')
     if v:shell_error == 0
-      call system(":!sed -i '$d' " . l:csv_save_path)
+      call system("sed -i '$d' " . l:csv_save_path)
       echo 'The CSV successfully written to: ' . l:csv_save_path
     else
       echoerr 'Failed to write CSV to: ' . l:csv_save_path . '\n' . l:command_msg
