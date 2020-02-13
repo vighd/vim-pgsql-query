@@ -3,29 +3,14 @@ let g:pager = 'PAGER="pspg -s 5 --no-commandbar --force-uniborder --less-status-
 " Command used to enable timing
 let g:timing = '"\\timing"'
 " Init variables
-let g:psql_user = 'postgres'
+let g:psql_user = ''
 let g:psql_db = ''
-let g:psql_host = 'localhost'
-let g:psql_conn_state = ""
-let g:psql_command = ""
+let g:psql_host = ''
+let g:psql_conn_state = ''
+let g:psql_command = ''
 
 " This function check for the required parameters
 fun! InitPGSQLQuery()
-  " User
-  if system("grep -Po '(?<=--USER: ).+' " . expand('%:p'))[:-2]
-    let g:psql_host = system("grep -Po '(?<=--USER: ).+' " . expand('%:p'))[:-2]
-  endif
-  " Database
-  let g:psql_db = system("grep -Po '(?<=--DATABASE: ).+' " . expand('%:p'))[:-2]
-  " Host
-  if system("grep -Po '(?<=--HOST: ).+' " . expand('%:p'))[:-2]
-    let g:psql_host = system("grep -Po '(?<=--HOST: ).+' " . expand('%:p'))[:-2]
-  endif
-  " The connection is Ok so set it globally
-  let g:psql_conn_state = 'ok'
-  " Build psql command
-  let g:psql_command = g:pager . " psql -U " . g:psql_user . " -h " . g:psql_host . " -d " . g:psql_db
-
   " Open the terminal if not opened yet
   if term_getstatus('vim-pgsql-query') == ""
     au BufWinLeave * if term_getstatus('vim-pgsql-query') != "" | bdelete! vim-pgsql-query | endif
@@ -49,7 +34,27 @@ endfunction
 " This function checks the connection parameters, if any of the parameter is
 " empty, call te Init function
 fun! RunPGSQLCheckConnecionParams()
+  " User
+  if system("grep -Po '(?<=--USER: ).+' " . expand('%:p'))[:-2] != ""
+    let g:psql_user = system("grep -Po '(?<=--USER: ).+' " . expand('%:p'))[:-2]
+  else
+    let g:psql_user = 'postgres'
+  endif
+
+  " Database
   let g:psql_db = system("grep -Po '(?<=--DATABASE: ).+' " . expand('%:p'))[:-2]
+
+  " Host
+  if system("grep -Po '(?<=--HOST: ).+' " . expand('%:p'))[:-2] != ""
+    let g:psql_host = system("grep -Po '(?<=--HOST: ).+' " . expand('%:p'))[:-2]
+  else
+    let g:psql_host = 'localhost'
+  endif
+
+  " The connection is Ok so set it globally
+  let g:psql_conn_state = 'ok'
+  " Build psql command
+  let g:psql_command = g:pager . " psql -U " . g:psql_user . " -h " . g:psql_host . " -d " . g:psql_db
 
   if g:psql_db != ''
     call InitPGSQLQuery()
@@ -70,7 +75,7 @@ fun! RunPGSQLQuery()
   if g:psql_conn_state == 'ok'
     call system("echo 'echo -e $(date +%H:%m:%S) Executing query... &&' > /tmp/query")
     call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f " . expand('%:p') . " -c " . g:timing ."' >> /tmp/query")
-    call TerminalRunCommand("eval $(cat /tmp/query)")
+    call TerminalRunCommand("eval $(cat /tmp/query) && rm /tmp/query")
   endif
 endfunction
 
@@ -83,7 +88,7 @@ fun! RunPGSQLVisualQuery() range
     execute "'<,'>w! /tmp/visual_query.sql"
     call system("echo 'echo $(date +%H:%m:%S) Executing query... &&' > /tmp/query")
     call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f /tmp/visual_query.sql -c " . g:timing . "' >> /tmp/query")
-    call TerminalRunCommand("eval $(cat /tmp/query)")
+    call TerminalRunCommand("eval $(cat /tmp/query) && rm /tmp/query /tmp/visual_query.sql")
   endif
 endfunction
 
@@ -96,7 +101,7 @@ fun! RunPGSQLVisualQueryAsJSON() range
   if g:psql_conn_state == 'ok'
     execute "'<,'>w! /tmp/visual_query.sql"
     call system("echo '" . g:psql_command . " -Atq -f /tmp/visual_query.sql' > /tmp/query")
-    call TerminalRunCommand('echo "$(date +%H:%m:%S) Executing query..." && eval $(cat /tmp/query) \| jq .')
+    call TerminalRunCommand('echo "$(date +%H:%m:%S) Executing query..." && eval $(cat /tmp/query) \| jq . && rm /tmp/query /tmp/visual_query.sql')
   endif
 endfunction
 
@@ -132,6 +137,7 @@ fun! RunPGSQLQueryToCsv() range
     if v:shell_error == 0
       call system("sed -i '$d' " . l:csv_save_path)
       echo 'The CSV successfully written to: ' . l:csv_save_path
+      call system("rm /tmp/vim_psql_to_csv.sql")
     else
       echoerr 'Failed to write CSV to: ' . l:csv_save_path . '\n' . l:command_msg
     endif
