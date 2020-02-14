@@ -13,7 +13,7 @@ let g:psql_command = ''
 fun! InitPGSQLQuery()
   " Open the terminal if not opened yet
   if term_getstatus('vim-pgsql-query') == ""
-    au BufWinLeave * if term_getstatus('vim-pgsql-query') != "" | bdelete! vim-pgsql-query | endif
+    au BufWinLeave * call DeInitPGSQLQuery()
     call term_start(['/bin/bash'], {'term_name': 'vim-pgsql-query', 'term_rows': 20})
     wincmd w
     " Remove shell prompt
@@ -31,7 +31,17 @@ fun! InitPGSQLQuery()
   endif
 endfunction
 
-" This function checks the connection parameters, if any of the parameter is
+" DeInitPGSQLQuery clears the temporary files and closes the therminal
+fun! DeInitPGSQLQuery()
+  if term_getstatus('vim-pgsql-query') != ""
+    bdelete! vim-pgsql-query
+  endif
+  call system('[ -f /tmp/query ] && rm /tmp/query')
+  call system('[ -f /tmp/visual_query.sql ] && rm /tmp/visual_query.sql')
+  call system('[ -f /tmp/vim_psql_to_csv.sql ] && rm /tmp/vim_psql_to_csv.sql')
+endfunction
+
+" RunPGSQLCheckConnecionParams checks the connection parameters, if any of the parameter is
 " empty, call te Init function
 fun! RunPGSQLCheckConnecionParams()
   " User
@@ -75,7 +85,7 @@ fun! RunPGSQLQuery()
   if g:psql_conn_state == 'ok'
     call system("echo 'echo -e $(date +%H:%m:%S) Executing query... &&' > /tmp/query")
     call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f " . expand('%:p') . " -c " . g:timing ."' >> /tmp/query")
-    call TerminalRunCommand("eval $(cat /tmp/query) && rm /tmp/query")
+    call TerminalRunCommand("eval $(cat /tmp/query)")
   endif
 endfunction
 
@@ -88,7 +98,7 @@ fun! RunPGSQLVisualQuery() range
     execute "'<,'>w! /tmp/visual_query.sql"
     call system("echo 'echo $(date +%H:%m:%S) Executing query... &&' > /tmp/query")
     call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f /tmp/visual_query.sql -c " . g:timing . "' >> /tmp/query")
-    call TerminalRunCommand("eval $(cat /tmp/query) && rm /tmp/query /tmp/visual_query.sql")
+    call TerminalRunCommand("eval $(cat /tmp/query)")
   endif
 endfunction
 
@@ -100,8 +110,9 @@ fun! RunPGSQLVisualQueryAsJSON() range
 
   if g:psql_conn_state == 'ok'
     execute "'<,'>w! /tmp/visual_query.sql"
-    call system("echo '" . g:psql_command . " -Atq -f /tmp/visual_query.sql' > /tmp/query")
-    call TerminalRunCommand('echo "$(date +%H:%m:%S) Executing query..." && eval $(cat /tmp/query) \| jq . && rm /tmp/query /tmp/visual_query.sql')
+    call system("echo 'echo $(date +%H:%m:%S) Executing query... &&' > /tmp/query")
+    call system("echo '" . g:psql_command . " -Atq -f /tmp/visual_query.sql' >> /tmp/query")
+    call TerminalRunCommand('eval $(cat /tmp/query) \| jq .')
   endif
 endfunction
 
@@ -137,7 +148,6 @@ fun! RunPGSQLQueryToCsv() range
     if v:shell_error == 0
       call system("sed -i '$d' " . l:csv_save_path)
       echo 'The CSV successfully written to: ' . l:csv_save_path
-      call system("rm /tmp/vim_psql_to_csv.sql")
     else
       echoerr 'Failed to write CSV to: ' . l:csv_save_path . '\n' . l:command_msg
     endif
