@@ -29,6 +29,9 @@ fun! InitPGSQLQuery()
     tnoremap <C-k> <C-w>+
     tnoremap <C-j> <C-w>-
   endif
+  
+  " Init dictionary
+  call PGSQLQueryGenDict()
 endfunction
 
 " DeInitPGSQLQuery clears the temporary files and closes the therminal
@@ -39,24 +42,52 @@ fun! DeInitPGSQLQuery()
   call system('[ -f /tmp/query ] && rm /tmp/query')
   call system('[ -f /tmp/visual_query.sql ] && rm /tmp/visual_query.sql')
   call system('[ -f /tmp/vim_psql_to_csv.sql ] && rm /tmp/vim_psql_to_csv.sql')
+  call system('[ -f /tmp/vim_pgsql_query_dict.txt ] && rm /tmp/vim_pgsql_query_dict.txt')
+endfunction
+
+" PGSQLQueryGenDict generates a dictionary file for keyword completion
+fun! PGSQLQueryGenDict()
+  let l:dictpath = '/tmp/vim_pgsql_query_dict.txt'
+  let l:gen_sql_dict_query =<< trim END
+    SELECT
+    t.table_name,
+    array_agg(c.column_name::text) AS columns
+    FROM
+    information_schema.tables t
+    INNER JOIN information_schema.columns c ON
+    t.table_name = c.table_name
+    WHERE
+    t.table_schema = 'public'
+    AND t.table_type= 'BASE TABLE'
+    AND c.table_schema = 'public'
+    GROUP BY t.table_name;
+    SELECT
+    routine_name
+    FROM information_schema.routines
+    WHERE
+    specific_schema = 'public';
+  END
+
+  call system("echo \"" . join(l:gen_sql_dict_query) . "\" \| psql -A --csv -qt -h " . g:psql_host . " -U " . g:psql_user . " -d " . g:psql_db . " > " . l:dictpath)
+  execute 'set dictionary+=' . l:dictpath
 endfunction
 
 " RunPGSQLCheckConnecionParams checks the connection parameters, if any of the parameter is
 " empty, call te Init function
 fun! RunPGSQLCheckConnecionParams()
   " User
-  if system("grep -Po '(?<=--USER: ).+' " . expand('%:p'))[:-2] != ""
+  if system("grep -Poi '(?<=--USER: ).+' " . expand('%:p'))[:-2] != ""
     let g:psql_user = system("grep -Po '(?<=--USER: ).+' " . expand('%:p'))[:-2]
   else
     let g:psql_user = 'postgres'
   endif
 
   " Database
-  let g:psql_db = system("grep -Po '(?<=--DATABASE: ).+' " . expand('%:p'))[:-2]
+  let g:psql_db = system("grep -Poi '(?<=--DATABASE: ).+' " . expand('%:p'))[:-2]
 
   " Host
-  if system("grep -Po '(?<=--HOST: ).+' " . expand('%:p'))[:-2] != ""
-    let g:psql_host = system("grep -Po '(?<=--HOST: ).+' " . expand('%:p'))[:-2]
+  if system("grep -Poi '(?<=--HOST: ).+' " . expand('%:p'))[:-2] != ""
+    let g:psql_host = system("grep -Poi '(?<=--HOST: ).+' " . expand('%:p'))[:-2]
   else
     let g:psql_host = 'localhost'
   endif
