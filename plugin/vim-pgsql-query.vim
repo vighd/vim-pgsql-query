@@ -114,8 +114,9 @@ fun! RunPGSQLQuery()
   call RunPGSQLCheckConnecionParams()
 
   if g:psql_conn_state == 'ok'
-    call system("echo 'echo -e $(date +%H:%m:%S) Executing query... &&' > /tmp/query")
-    call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f " . expand('%:p') . " -c " . g:timing ."' >> /tmp/query")
+    call system("echo 'echo $(date +%H:%m:%S) Executing query... && echo &&' > /tmp/query")
+    call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f " . expand('%:p') . " -c " . g:timing ." &&' >> /tmp/query")
+    call system("echo 'echo && echo $(date +%H:%m:%S) Done.' >> /tmp/query")
     call TerminalRunCommand("eval $(cat /tmp/query)")
   endif
 endfunction
@@ -127,8 +128,9 @@ fun! RunPGSQLVisualQuery() range
 
   if g:psql_conn_state == 'ok'
     execute "'<,'>w! /tmp/visual_query.sql"
-    call system("echo 'echo $(date +%H:%m:%S) Executing query... &&' > /tmp/query")
-    call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f /tmp/visual_query.sql -c " . g:timing . "' >> /tmp/query")
+    call system("echo 'echo $(date +%H:%m:%S) Executing query... && echo &&' > /tmp/query")
+    call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f /tmp/visual_query.sql -c " . g:timing . " &&' >> /tmp/query")
+    call system("echo 'echo && echo $(date +%H:%m:%S) Done.' >> /tmp/query")
     call TerminalRunCommand("eval $(cat /tmp/query)")
   endif
 endfunction
@@ -141,8 +143,7 @@ fun! RunPGSQLVisualQueryAsJSON() range
 
   if g:psql_conn_state == 'ok'
     execute "'<,'>w! /tmp/visual_query.sql"
-    call system("echo 'echo $(date +%H:%m:%S) Executing query... &&' > /tmp/query")
-    call system("echo '" . g:psql_command . " -Atq -f /tmp/visual_query.sql' >> /tmp/query")
+    call system("echo '" . g:psql_command . " -Atq -f /tmp/visual_query.sql' > /tmp/query")
     call TerminalRunCommand('eval $(cat /tmp/query) \| jq .')
   endif
 endfunction
