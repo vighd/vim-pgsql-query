@@ -1,5 +1,5 @@
 " Pager used to parse psql output
-let g:pager = 'PAGER="pspg -s 5 --no-commandbar --force-uniborder --less-status-bar --null string --bold-labels -I"'
+let g:pager = " |& pspg -s 5 --no-commandbar --force-uniborder --less-status-bar --null string --bold-labels -I"
 " Command used to enable timing
 let g:timing = '"\\timing"'
 " Init variables
@@ -95,7 +95,7 @@ fun! RunPGSQLCheckConnecionParams()
   " The connection is Ok so set it globally
   let g:psql_conn_state = 'ok'
   " Build psql command
-  let g:psql_command = g:pager . " psql -U " . g:psql_user . " -h " . g:psql_host . " -d " . g:psql_db
+  let g:psql_command = "psql -U " . g:psql_user . " -h " . g:psql_host . " -d " . g:psql_db
 
   if g:psql_db != ''
     call InitPGSQLQuery()
@@ -114,10 +114,8 @@ fun! RunPGSQLQuery()
   call RunPGSQLCheckConnecionParams()
 
   if g:psql_conn_state == 'ok'
-    call system("echo 'echo $(date +%H:%m:%S) Executing query... && echo &&' > /tmp/query")
-    call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f " . expand('%:p') . " -c " . g:timing ." &&' >> /tmp/query")
-    call system("echo 'echo && echo $(date +%H:%m:%S) Done.' >> /tmp/query")
-    call TerminalRunCommand("eval $(cat /tmp/query)")
+    call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f " . expand('%:p') . " -c " . g:timing ."' > /tmp/query")
+    call TerminalRunCommand("eval $(cat /tmp/query) " . g:pager)
   endif
 endfunction
 
@@ -128,10 +126,8 @@ fun! RunPGSQLVisualQuery() range
 
   if g:psql_conn_state == 'ok'
     execute "'<,'>w! /tmp/visual_query.sql"
-    call system("echo 'echo $(date +%H:%m:%S) Executing query... && echo &&' > /tmp/query")
-    call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f /tmp/visual_query.sql -c " . g:timing . " &&' >> /tmp/query")
-    call system("echo 'echo && echo $(date +%H:%m:%S) Done.' >> /tmp/query")
-    call TerminalRunCommand("eval $(cat /tmp/query)")
+    call system("echo '" . g:psql_command . " -q -c " . g:timing . " -f /tmp/visual_query.sql -c " . g:timing . "' > /tmp/query")
+    call TerminalRunCommand("eval $(cat /tmp/query) " . g:pager)
   endif
 endfunction
 
@@ -198,5 +194,5 @@ fun! TerminalRunCommand(command)
   call term_sendkeys('vim-pgsql-query', "clear\<CR>")
   " Run a command
   sleep 10m
-  call term_sendkeys('vim-pgsql-query', a:command . " \<CR>")
+  call term_sendkeys('vim-pgsql-query', "echo $(date +%H:%m:%S) Executing query... && " . a:command . " && echo $(date +%H:%m:%S) Done. \<CR>")
 endfunction
