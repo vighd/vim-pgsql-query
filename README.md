@@ -1,38 +1,42 @@
-*vim-pgsql-query.txt* A minimal plugin used to query PGSQL databases with psql and pspg
+# VIM-PGSQL-QUERY
 
-========================================================================================
-CONTENTS                                                      *vim-pgsql-query-contents*
+A minimal plugin used to query PGSQL databases with psql and pspg
 
-    1. Usage.....................................................|vim-pgsql-query-usage|
+### Dependencies
 
-========================================================================================
-1. Dependencies.                                           vim-pgsql-query-dependencies*
-
-  - psql -> https://www.postgresql.org/docs/12/app-psql.html
+  - psql -> https://www.postgresql.org/docs/13/app-psql.html
   - pspg -> https://github.com/okbob/pspg
+  - jq -> https://stedolan.github.io/jq
 
-----------------------------------------------------------------------------------------
+### Usage
 
-2. Usage                                                         *vim-pgsql-query-usage*
+  Add these mappings:
 
-  Add these two mappings:
-
+```vim
   nnoremap <F9>   :call RunPGSQLQuery<CR>         " To run query on the current buffer
   xnoremap <F9>   :call RunPGSQLQueryVisual()<CR> " To run query on the visual selection
   xnoremap <S-F9> :call RunPGSQLQueryToCsv()<CR>  " To run query on the visual selection
                                                   " and saves the query output the given
                                                   " csv path (it will includes the column
                                                   " names as header)
+  xnoremap <C-F9> :call RunPGSQLVisualQueryAsJSON()<CR> " To run query on visual selection
+                                                        " then format the output as JSON
+```
 
   Add connection parameter comment start at the every SQL file if you want to use this
   plugin. The whitespace is required!
 
-  --USER: [db-user-name]
-  --POSTGRES: [db-name]
+  ```postgresql
+  --USER: foo
+  --DATABASE: bar_db
+  --HOST: localhost (default is localhost so it is optional) 
 
-  If you executes a query, it will opens a terminal window below. Now, when you executes
-  a query, the query-s output will be written into the terminal.
+  SELECT a FROM sample_query;
+  ```
 
-  You can switch between the opened windows with <C-W><C-W> (CTRL-W twice). If you want
-  to scroll the terminal first press <C-a>(CTRL-a) to enter normal mode, use j-k to scroll,
-  then exit from normal mode with <a>.
+  If you executes a query, it will opens a terminal window below and the output of the query (based on the method) will be
+  written to the terminal.
+
+  You can switch between the opened windows with \<C-W>\<C-W> (CTRL-W twice). If you want
+  to scroll the terminal first press \<C-a>(CTRL-a) to enter normal mode, use j-k to scroll,
+  then exit from normal mode with \<a>(a).

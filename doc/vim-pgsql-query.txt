@@ -10,6 +10,7 @@ CONTENTS                                                      *vim-pgsql-query-c
 
   - psql -> https://www.postgresql.org/docs/12/app-psql.html
   - pspg -> https://github.com/okbob/pspg
+  - jq -> https://stedolan.github.io/jq
 
 ----------------------------------------------------------------------------------------
 
@@ -34,8 +35,8 @@ CONTENTS                                                      *vim-pgsql-query-c
   --DATABASE: [db-name]   -- This is REQUIRED
   --HOST: [db-host]       -- By default is localhost
 
-  If you executes a query, it will opens a terminal window below. And the query-s output
-  will be written into the terminal.
+  If you executes a query, it will opens a terminal window below and the output of the query
+  (based on the method) will be written to the terminal.
 
   You can switch between the opened windows with <C-W><C-W> (CTRL-W twice). If you want
   to scroll the terminal first press <C-a>(CTRL-a) to enter normal mode, use j-k to scroll,
