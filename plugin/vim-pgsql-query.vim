@@ -68,7 +68,8 @@ fun! PGSQLQueryGenDict()
     specific_schema = 'public';
   END
 
-  call system("echo \"" . join(l:gen_sql_dict_query) . "\" \| psql -A --csv -qt -h " . g:psql_host . " -U " . g:psql_user . " -d " . g:psql_db . " > " . l:dictpath)
+  call system("echo \"" . join(l:gen_sql_dict_query) . "\" \| psql -A --csv -qt -h " . g:psql_host . " -U " . g:psql_user . " -d " . g:psql_db . " > /tmp/dict")
+  call system('sed -r "s/(\"|\{|\})//g" /tmp/dict | sed "s/,/\n/g" | sort | uniq > ' . l:dictpath)
   execute 'set dictionary+=' . l:dictpath
 endfunction
 

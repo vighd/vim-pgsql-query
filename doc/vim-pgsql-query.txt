@@ -18,7 +18,7 @@ CONTENTS                                                      *vim-pgsql-query-c
 
   Add these two mappings:
 
-  nnoremap <F9>   :call RunPGSQLQuery<CR>         " To run query on the current buffer
+  nnoremap <F9>   :call RunPGSQLQuery()<CR>         " To run query on the current buffer
   xnoremap <F9>   :call RunPGSQLVisualQuery()<CR> " To run query on the visual selection
   xnoremap <S-F9> :call RunPGSQLQueryToCsv()<CR>  " To run query on the visual selection
                                                   " and saves the query output the given
@@ -41,3 +41,6 @@ CONTENTS                                                      *vim-pgsql-query-c
   You can switch between the opened windows with <C-W><C-W> (CTRL-W twice). If you want
   to scroll the terminal first press <C-a>(CTRL-a) to enter normal mode, use j-k to scroll,
   then exit from normal mode with <a>.
+
+  If you want to use keyword completion with coc, you need to add coc-dictionary plugin.
+  After the first executed query, the dictionary will be available to completion.
