@@ -41,7 +41,6 @@ fun! DeInitPGSQLQuery()
   endif
   call system('[ -f /tmp/query ] && rm /tmp/query')
   call system('[ -f /tmp/visual_query.sql ] && rm /tmp/visual_query.sql')
-  call system('[ -f /tmp/vim_psql_to_csv.sql ] && rm /tmp/vim_psql_to_csv.sql')
   call system('[ -f /tmp/vim_pgsql_query_dict.txt ] && rm /tmp/vim_pgsql_query_dict.txt')
 endfunction
 
@@ -132,8 +131,8 @@ fun! RunPGSQLVisualQuery() range
   endif
 endfunction
 
-" RunPGSQLVisualQueryAsJSON executes only the visual selection and pases as
-" json.
+" RunPGSQLVisualQueryAsJSON executes only the visual selection then format the
+" output as JSON with jq.
 fun! RunPGSQLVisualQueryAsJSON() range
   " Check the file header for connection parameters
   call RunPGSQLCheckConnecionParams()
@@ -142,44 +141,6 @@ fun! RunPGSQLVisualQueryAsJSON() range
     execute "'<,'>w! /tmp/visual_query.sql"
     call system("echo '" . g:psql_command . " -Atq -f /tmp/visual_query.sql' > /tmp/query")
     call TerminalRunCommand('eval $(cat /tmp/query) \| jq .')
-  endif
-endfunction
-
-" RunPGSQLQueryToCsv prompts for the save path, then executes the visual
-" selection and saves as csv to the given path.
-fun! RunPGSQLQueryToCsv() range
-  " Check the file header for connection parameters
-  call RunPGSQLCheckConnecionParams()
-
-  if g:psql_conn_state == 'ok'
-    " Write out the query what we want to export as CSV
-    execute "'<,'>w! /tmp/vim_psql_to_csv.sql"
-
-    " Prompt for the path of the CSV and handle errors
-    call inputsave()
-    let l:csv_save_path = input('File name to save csv: ')
-    call inputrestore()
-    if l:csv_save_path == ""
-      echoerr 'The filename is not be empty!'
-      return
-    endif
-
-    " Prompt for the CSV separator string and handle errors
-    call inputsave()
-    let l:separator_string = input('Separator string: ')
-    call inputrestore()
-    if l:separator_string == ""
-      let l:separator_string = ';'
-    endif
-
-    " Silently run the query and handle errors
-    let l:command_msg = system(g:psql_command . ' --csv -o ' . l:csv_save_path . ' -A --field-separator=\' . l:separator_string . ' -q -f /tmp/vim_psql_to_csv.sql')
-    if v:shell_error == 0
-      call system("sed -i '$d' " . l:csv_save_path)
-      echo 'The CSV successfully written to: ' . l:csv_save_path
-    else
-      echoerr 'Failed to write CSV to: ' . l:csv_save_path . '\n' . l:command_msg
-    endif
   endif
 endfunction
 

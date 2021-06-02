@@ -13,12 +13,8 @@ A minimal plugin used to query PGSQL databases with psql and pspg
   Add these mappings:
 
 ```vim
-  nnoremap <F9>   :call RunPGSQLQuery<CR>         " To run query on the current buffer
-  xnoremap <F9>   :call RunPGSQLQueryVisual()<CR> " To run query on the visual selection
-  xnoremap <S-F9> :call RunPGSQLQueryToCsv()<CR>  " To run query on the visual selection
-                                                  " and saves the query output the given
-                                                  " csv path (it will includes the column
-                                                  " names as header)
+  nnoremap <F9>   :call RunPGSQLQuery<CR>               " To run query on the current buffer
+  xnoremap <F9>   :call RunPGSQLQueryVisual()<CR>       " To run query on the visual selection
   xnoremap <C-F9> :call RunPGSQLVisualQueryAsJSON()<CR> " To run query on visual selection
                                                         " then format the output as JSON
 ```
