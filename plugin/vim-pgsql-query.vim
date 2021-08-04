@@ -1,5 +1,5 @@
 " Pager used to parse psql output
-let g:pager = " |& pspg -s 5 --no-commandbar --force-uniborder --less-status-bar --null string --bold-labels -I"
+let g:pager = " |& pspg -s 5 --no-commandbar --force-uniborder --less-status-bar --bold-labels -I"
 " Command used to enable timing
 let g:timing = '"\\timing"'
 " Init variables
